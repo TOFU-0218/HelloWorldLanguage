@@ -1,1 +1,2 @@
 # HelloWorldLanguage
+Hello worldを短いコードで出力できる言語ほど偉いらしいです。
