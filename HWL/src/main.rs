@@ -83,7 +83,7 @@ fn main() {
 
     // ユーザーの入力を取得
     let mut input = String::new();
-    io::stdin().read_line(&mut input).expect("入力エラー");
+    io::stdin().read_line(&mut input).expect("Failed to read line");
 
     // 改行を削除
     let input = input.trim().to_string();
