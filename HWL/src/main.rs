@@ -1,6 +1,6 @@
 use std::io::{self, Write};
 
-const TAPE_SIZE: usize = 10;
+const TAPE_SIZE: usize = 1000;
 
 struct HelloInterpreter {
     tape: [u8; TAPE_SIZE],
@@ -10,10 +10,10 @@ struct HelloInterpreter {
 
 impl HelloInterpreter {
     fn new(user_code: Option<String>) -> Self {
-        // 最初に必ず実行される「Hello, World!」を出力するデフォルトコード
-        let default_code = "llllllHlllllllll,HHl,lllllll,llll,o,llllll,llllll,lllll,lll,oooooo,";
+        // 最初に必ず実行される「Hello,World!」を出力するデフォルトコード
+        let default_code = "llllllllllllllllllllllllllllllll!HllHllHllHllHllHllHllHllHllHllHlleeeeeeeeeeeo?HlHlHlHlHlHlHlHlHlHlHleeeeeeeeeeeHlllllll,Hllll,Hlllllllllll,Hlllllllllll,Hllllllllllllll,Hooooooooooooooooooooo,Hllllllllllllllllllllll,Hllllllllllllll,Hlllllllllllllllll,Hlllllllllll,Hlll,Hllllllllllllllll!Hlleo?Hl,Hllllllllll,d";
 
-        // ユーザーの入力がある場合はデフォルトコードの後に追加
+        // ユーザーの入力があればデフォルトコードの後に追加
         let full_code = match user_code {
             Some(user_code) => format!("{}{}", default_code, user_code),
             None => default_code.to_string(),
@@ -60,10 +60,39 @@ impl HelloInterpreter {
                     // 現在のセルの値を0にリセット
                     self.tape[self.pointer] = 0;
                 }
-                'r' => {
-                    // プログラムの開始位置に戻る（ループ効果）
-                    pc = 0;
-                    continue;
+                '!' => {
+                    // 現在のセルが0なら対応する`?`までジャンプ
+                    if self.tape[self.pointer] == 0 {
+                        let mut open_brackets = 1;
+                        while open_brackets > 0 {
+                            pc += 1;
+                            if pc >= code_chars.len() {
+                                panic!("Error: no matching `?`");
+                            }
+                            if code_chars[pc] == '!' {
+                                open_brackets += 1;
+                            } else if code_chars[pc] == '?' {
+                                open_brackets -= 1;
+                            }
+                        }
+                    }
+                }
+                '?' => {
+                    // 現在のセルが0でなければ対応する`!`に戻る
+                    if self.tape[self.pointer] != 0 {
+                        let mut close_brackets = 1;
+                        while close_brackets > 0 {
+                            if pc == 0 {
+                                panic!("Error: no matching `!`");
+                            }
+                            pc -= 1;
+                            if code_chars[pc] == '!' {
+                                close_brackets -= 1;
+                            } else if code_chars[pc] == '?' {
+                                close_brackets += 1;
+                            }
+                        }
+                    }
                 }
                 'd' => {
                     // プログラムを終了
@@ -83,7 +112,7 @@ fn main() {
 
     // ユーザーの入力を取得
     let mut input = String::new();
-    io::stdin().read_line(&mut input).expect("Failed to read line");
+    io::stdin().read_line(&mut input).expect("Error: invalid input");
 
     // 改行を削除
     let input = input.trim().to_string();
